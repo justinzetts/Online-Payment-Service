@@ -39,6 +39,23 @@ namespace TenmoServer.Controllers
 
 
         }
+
+        [HttpPut]
+        [Authorize]
+        public ActionResult SendMoney(Transfer transfer)
+        {
+            transfer.Account_From_Id = LoggedInUserId;
+
+            bool transferSuccessful = userDAO.TransferBucks(transfer);
+
+            if (transferSuccessful == false)
+            {
+                return NotFound("Not successful"); // add a more robust message here later
+            }
+
+            return Ok(transfer);
+        }
+
         private int LoggedInUserId
         {
             get
