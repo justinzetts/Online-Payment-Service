@@ -5,6 +5,7 @@ namespace TenmoClient
 {
     public class UserInterface
     {
+        private readonly UsersService usersService = new UsersService();
         private readonly ConsoleService consoleService = new ConsoleService();
         private readonly AuthService authService = new AuthService();
 
@@ -75,7 +76,8 @@ namespace TenmoClient
                     switch (menuSelection)
                     {
                         case 1: // View Balance
-                            Console.WriteLine("NOT IMPLEMENTED!"); // TODO: Implement me
+                            double balance  = usersService.GetBalanceById();
+                            Console.WriteLine("Your current account balance is: $" + balance); // TODO: Implement me
                             break;
 
                         case 2: // View Past Transfers
@@ -144,7 +146,8 @@ namespace TenmoClient
                     string jwt = authenticatedUser.Token;
 
                     // TODO: Do something with this JWT.
-                    Console.WriteLine("DOING NOTHING WITH JWT");
+                    Console.WriteLine("Successfully logged in with JWT of " + jwt);
+                    usersService.UpdateToken(jwt);
                 }
             }
         }

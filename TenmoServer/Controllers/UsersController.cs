@@ -24,7 +24,7 @@ namespace TenmoServer.Controllers
         }
 
         [HttpGet]
-        // [Authorize]
+        [Authorize]
         public ActionResult GetBalance()
         {
             int id = LoggedInUserId;
