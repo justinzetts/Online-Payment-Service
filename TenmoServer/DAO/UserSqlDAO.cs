@@ -97,7 +97,41 @@ namespace TenmoServer.DAO
                 Username = Convert.ToString(reader["username"]),
                 PasswordHash = Convert.ToString(reader["password_hash"]),
                 Salt = Convert.ToString(reader["salt"]),
+
             };
+        }
+
+        private User GetUserAndBalanceFromReader(SqlDataReader reader)
+        {
+            return new User()
+            {
+                UserId = Convert.ToInt32(reader["user_id"]),
+                Username = Convert.ToString(reader["username"]),
+                Balance = Convert.ToDouble(reader["Balance"])
+            };
+        }
+
+        public User GetBalanceById(int id)
+        {
+            const string sql = "SELECT u.username, u.user_id, (SELECT a.balance FROM accounts a WHERE u.user_id = a.user_id) AS 'Balance' "
+            + "FROM Users u WHERE u.user_id = @id";
+
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+
+                SqlCommand command = new SqlCommand(sql, conn);
+                command.Parameters.AddWithValue("@id", id);
+
+                SqlDataReader reader = command.ExecuteReader();
+
+                if (reader.Read())
+                {
+                    return GetUserAndBalanceFromReader(reader);
+                }
+            }
+
+            return null;
         }
     }
 }
