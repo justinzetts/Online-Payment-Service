@@ -12,5 +12,6 @@ namespace TenmoServer.DAO
         bool CheckTransferValidity(Transfer transfer);
         bool TransferBucks(Transfer transfer);
         List<Transfer> GetTransfers(int id);
+        Transfer GetTransferById(int id);
     }
 }

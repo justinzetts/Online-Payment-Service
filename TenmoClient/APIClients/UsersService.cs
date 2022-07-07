@@ -85,6 +85,15 @@ namespace TenmoClient
             return response.Data;
         }
 
+        public Transfer DisplayTransferByID(int id)
+        {
+            RestRequest request = new RestRequest("users/transfer/" + id);
+
+            IRestResponse <Transfer> response = client.Get<Transfer>(request);
+
+            return response.Data;
+        }
+
         private string token;
         public void UpdateToken(string jwt)
         {

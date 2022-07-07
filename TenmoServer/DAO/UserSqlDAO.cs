@@ -88,38 +88,6 @@ namespace TenmoServer.DAO
             return GetUser(username);
         }
 
-        private User GetUserFromReader(SqlDataReader reader)
-        {
-            return new User()
-            {
-                UserId = Convert.ToInt32(reader["user_id"]),
-                Username = Convert.ToString(reader["username"]),
-                PasswordHash = Convert.ToString(reader["password_hash"]),
-                Salt = Convert.ToString(reader["salt"]),
-
-            };
-        }
-
-        private User GetRecipientsFromReader(SqlDataReader reader)
-        {
-            return new User()
-            {
-                UserId = Convert.ToInt32(reader["user_id"]),
-                Username = Convert.ToString(reader["username"]),
-            };
-        }
-
-        private User GetUserAndBalanceFromReader(SqlDataReader reader)
-        {
-            return new User()
-            {
-                UserId = Convert.ToInt32(reader["user_id"]),
-                Username = Convert.ToString(reader["username"]),
-                Balance = Convert.ToDouble(reader["Balance"])
-            };
-        }
-
-
 
         public User GetBalanceById(int id)
         {
@@ -140,12 +108,8 @@ namespace TenmoServer.DAO
                     return GetUserAndBalanceFromReader(reader);
                 }
             }
-
             return null;
         }
-
-
-
 
         public bool CheckTransferValidity(Transfer transfer)
         {
@@ -158,7 +122,7 @@ namespace TenmoServer.DAO
                 connCheck.Open();
 
                 SqlCommand commandCheck = new SqlCommand(sqlCheckValidity, connCheck);
-                commandCheck.Parameters.AddWithValue("@fromuserID", transfer.From_User_Id);
+                commandCheck.Parameters.AddWithValue("@fromuserID", transfer.FromUserId);
 
                 double balance = Convert.ToDouble(commandCheck.ExecuteScalar());
 
@@ -169,9 +133,10 @@ namespace TenmoServer.DAO
             }
             return DoTransfer;
         }
+
         public bool TransferBucks(Transfer transfer)
         {
-        // TO DO - do checking to make sure balance is available, to make sure to account is valid, etc
+            // TO DO - do checking to make sure balance is available, to make sure to account is valid, etc
 
             const string sqlIfValid = "INSERT INTO transfers (transfer_type_id, transfer_status_id, account_from, account_to, amount) " +
                             "VALUES('1001', '2001', (SELECT a.account_id FROM accounts a WHERE a.user_id = @fromuserID), " +
@@ -184,13 +149,13 @@ namespace TenmoServer.DAO
                 connIfValid.Open();
 
                 SqlCommand commandIfValid = new SqlCommand(sqlIfValid, connIfValid);
-                commandIfValid.Parameters.AddWithValue("@fromuserID", transfer.From_User_Id);
-                commandIfValid.Parameters.AddWithValue("@touserID", transfer.To_User_Id);
+                commandIfValid.Parameters.AddWithValue("@fromuserID", transfer.FromUserId);
+                commandIfValid.Parameters.AddWithValue("@touserID", transfer.ToUserId);
                 commandIfValid.Parameters.AddWithValue("@amount", transfer.Amount);
 
-                int count = commandIfValid.ExecuteNonQuery();    
+                int count = commandIfValid.ExecuteNonQuery();
             }
-        return true;
+            return true;
         }
 
         public List<Transfer> GetTransfers(int id)
@@ -225,20 +190,94 @@ namespace TenmoServer.DAO
             return transfers;
         }
 
+        public Transfer GetTransferById(int id)
+        {
+            const string sql = "select t.transfer_id, (SELECT u.username FROM users u WHERE u.user_id = " +
+                               "(SELECT a.user_id FROM accounts a WHERE account_id = t.account_from)) AS 'from_username', " +
+                               "(SELECT u.username FROM users u WHERE u.user_id = (SELECT a.user_id FROM accounts a WHERE account_id = t.account_to)) " +
+                               "AS 'to_username', t.amount, (SELECT tt.transfer_type_desc FROM transfer_types tt WHERE tt.transfer_type_id = t.transfer_type_id) " +
+                               "AS 'transfer_type_desc', (SELECT ts.transfer_status_desc FROM transfer_statuses ts WHERE ts.transfer_status_id = t.transfer_status_id) " +
+                               "AS 'transfer_status_desc' from transfers t where t.transfer_id = @id; ";
+
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+
+                SqlCommand command = new SqlCommand(sql, conn);
+                command.Parameters.AddWithValue("@id", id);
+
+                SqlDataReader reader = command.ExecuteReader();
+
+                if (reader.Read())
+                {
+                    return GetTransferByIdFromReader(reader);
+                }
+            }
+            return null;
+        }
+
         private Transfer GetTransfersFromReader(SqlDataReader reader)
         {
             return new Transfer()
             {
-                Transfer_Id = Convert.ToInt32(reader["transfer_id"]),
+                TransferId = Convert.ToInt32(reader["transfer_id"]),
 
-                Transfer_Type_Desc = Convert.ToString(reader["transfer_type_desc"]),
+                TransferTypeDesc = Convert.ToString(reader["transfer_type_desc"]),
 
-                From_Username = Convert.ToString(reader["from_username"]),
+                FromUsername = Convert.ToString(reader["from_username"]),
 
-                To_Username = Convert.ToString(reader["to_username"]),
+                ToUsername = Convert.ToString(reader["to_username"]),
 
                 Amount = Convert.ToDouble(reader["amount"])
+            };
+        }
 
+        private Transfer GetTransferByIdFromReader(SqlDataReader reader)
+        {
+            return new Transfer()
+            {
+                TransferId = Convert.ToInt32(reader["transfer_id"]),
+
+                TransferTypeDesc = Convert.ToString(reader["transfer_type_desc"]),
+
+                TransferStatus = Convert.ToString(reader["transfer_status_desc"]),
+
+                FromUsername = Convert.ToString(reader["from_username"]),
+
+                ToUsername = Convert.ToString(reader["to_username"]),
+
+                Amount = Convert.ToDouble(reader["amount"])
+            };
+        }
+
+        private User GetUserFromReader(SqlDataReader reader)
+        {
+            return new User()
+            {
+                UserId = Convert.ToInt32(reader["user_id"]),
+                Username = Convert.ToString(reader["username"]),
+                PasswordHash = Convert.ToString(reader["password_hash"]),
+                Salt = Convert.ToString(reader["salt"]),
+
+            };
+        }
+
+        private User GetRecipientsFromReader(SqlDataReader reader)
+        {
+            return new User()
+            {
+                UserId = Convert.ToInt32(reader["user_id"]),
+                Username = Convert.ToString(reader["username"]),
+            };
+        }
+
+        private User GetUserAndBalanceFromReader(SqlDataReader reader)
+        {
+            return new User()
+            {
+                UserId = Convert.ToInt32(reader["user_id"]),
+                Username = Convert.ToString(reader["username"]),
+                Balance = Convert.ToDouble(reader["Balance"])
             };
         }
     }

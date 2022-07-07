@@ -83,7 +83,7 @@ namespace TenmoClient
 
                         case 2: // View Past Transfers
                             DisplayTransfers();
-                            Console.WriteLine("NOT IMPLEMENTED!"); // TODO: Implement me
+                            DisplayTransferByID();
                             break;
 
                         case 3: // View Pending Requests
@@ -94,7 +94,6 @@ namespace TenmoClient
                             DisplayUsers();
                             DoTransfer();
                             Console.WriteLine("Transfer Complete!");
-                            // TODO: Implement me
                             break;
 
                         case 5: // Request TE Bucks
@@ -175,7 +174,7 @@ namespace TenmoClient
             Transfer transfer = new Transfer();
             Console.WriteLine("---------------------------------");
             Console.WriteLine("Please enter ID of user you are sending to (0 to cancel): ");
-            transfer.To_User_Id = Convert.ToInt32(Console.ReadLine());
+            transfer.ToUserId = Convert.ToInt32(Console.ReadLine());
             Console.WriteLine("Please enter amount to send (0 to cancel): ");
             transfer.Amount = Convert.ToDouble(Console.ReadLine());
             usersService.SendMoney(transfer);
@@ -184,14 +183,32 @@ namespace TenmoClient
         private void DisplayTransfers()
         {
             Console.WriteLine("---------------------------------");
-            Console.WriteLine("Transfer ID         From/To       Amount      Transaction Type");
+            Console.WriteLine("Transfer ID     From/To       Amount    Transaction Type");
             Console.WriteLine("---------------------------------");
             List<Transfer> transfers = new List<Transfer>();
             transfers = usersService.DisplayTransfers();
             foreach (Transfer transfer in transfers)
             {
-                Console.WriteLine(transfer.Transfer_Id + "        " + transfer.From_Username + "/" + transfer.To_Username + "        " + transfer.Amount + "        " + transfer.Transfer_Type_Desc);
+                Console.WriteLine(transfer.TransferId + "           " + transfer.FromUsername + "/" + transfer.ToUsername + "       " + transfer.Amount + "        " + transfer.TransferTypeDesc);
             }
+            Console.WriteLine("Please enter transfer ID to view details (0 to cancel): ");
+        }
+        private void DisplayTransferByID()
+        {
+            int transferID = Convert.ToInt32(Console.ReadLine());
+            Console.WriteLine("---------------------------------");
+            Console.WriteLine("Transfer Details");
+            Console.WriteLine("---------------------------------");
+
+            Transfer transfer = new Transfer();
+            transfer = usersService.DisplayTransferByID(transferID);
+
+            Console.WriteLine("Id: " + transfer.TransferId);
+            Console.WriteLine("From: " + transfer.FromUsername);
+            Console.WriteLine("To: " + transfer.ToUsername);
+            Console.WriteLine("Type: " + transfer.TransferTypeDesc);
+            Console.WriteLine("Status: " + transfer.TransferStatus);
+            Console.WriteLine("Amount: " + transfer.Amount);
         }
     }
 }
