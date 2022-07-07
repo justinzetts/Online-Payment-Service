@@ -68,6 +68,17 @@ namespace TenmoServer.Controllers
             return Ok(recipients);
         }
 
+        [HttpGet("transfers")]
+        [Authorize]
+
+        public ActionResult ListTransfers()
+        {
+            int userId = LoggedInUserId;
+            List<Transfer> transfers = userDAO.GetTransfers(userId);
+
+            return Ok(transfers);
+        }
+
         private int LoggedInUserId
         {
             get

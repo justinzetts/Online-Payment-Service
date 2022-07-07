@@ -11,7 +11,6 @@ namespace TenmoServer.DAO
         User GetBalanceById(int id);
         bool CheckTransferValidity(Transfer transfer);
         bool TransferBucks(Transfer transfer);
-        
-        // List<Transfer> GetTransfers(int id);
+        List<Transfer> GetTransfers(int id);
     }
 }

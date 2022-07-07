@@ -144,24 +144,7 @@ namespace TenmoServer.DAO
             return null;
         }
 
-        private Transfer GetTransfersFromReader(SqlDataReader reader)
-        {
-            return new Transfer()
-            {
-                Transfer_Id = Convert.ToInt32(reader["transfer_id"]),
 
-                Transfer_Type_Id = Convert.ToInt32(reader["transfer_type_id"]),
-
-                Transfer_Status_Id = Convert.ToInt32(reader["transfer_status_id"]),
-
-                Account_From_Id = Convert.ToInt32(reader["account_from"]),
-
-                Account_To_Id = Convert.ToInt32(reader["account_to"]),
-
-                Amount = Convert.ToDouble(reader["amount"])
-
-            };
-        }
 
 
         public bool CheckTransferValidity(Transfer transfer)
@@ -191,9 +174,10 @@ namespace TenmoServer.DAO
         // TO DO - do checking to make sure balance is available, to make sure to account is valid, etc
 
             const string sqlIfValid = "INSERT INTO transfers (transfer_type_id, transfer_status_id, account_from, account_to, amount) " +
-                            "VALUES('1001', '2001', (SELECT a.account_id FROM accounts a WHERE a.user_id = @fromuserID), @accountToID, @amount); " +
-                            "UPDATE accounts SET balance = balance - @amount WHERE account_id = (SELECT a.account_id FROM accounts a WHERE a.user_id = @fromuserID); " +
-                            "UPDATE accounts SET balance = balance + @amount WHERE account_id = @accountToID; ";
+                            "VALUES('1001', '2001', (SELECT a.account_id FROM accounts a WHERE a.user_id = @fromuserID), " +
+                            "(SELECT a.account_id FROM accounts a WHERE a.user_id = @touserID), @amount); " +
+                            "UPDATE accounts SET balance = balance - @amount WHERE user_id = @fromuserID; " +
+                            "UPDATE accounts SET balance = balance + @amount WHERE user_id = @touserID; ";
 
             using (SqlConnection connIfValid = new SqlConnection(connectionString))
             {
@@ -201,47 +185,61 @@ namespace TenmoServer.DAO
 
                 SqlCommand commandIfValid = new SqlCommand(sqlIfValid, connIfValid);
                 commandIfValid.Parameters.AddWithValue("@fromuserID", transfer.From_User_Id);
-                commandIfValid.Parameters.AddWithValue("@accountToID", transfer.Account_To_Id);
+                commandIfValid.Parameters.AddWithValue("@touserID", transfer.To_User_Id);
                 commandIfValid.Parameters.AddWithValue("@amount", transfer.Amount);
 
-                int count = commandIfValid.ExecuteNonQuery();
-
-                
+                int count = commandIfValid.ExecuteNonQuery();    
             }
-
         return true;
         }
 
+        public List<Transfer> GetTransfers(int id)
+        {
+            List<Transfer> transfers = new List<Transfer>();
 
+            const string sql = "select t.transfer_id, " +
+                                "(SELECT u.username FROM users u WHERE u.user_id = (SELECT a.user_id FROM accounts a WHERE account_id = t.account_from)) AS 'from_username', " +
+                                "(SELECT u.username FROM users u WHERE u.user_id = (SELECT a.user_id FROM accounts a WHERE account_id = t.account_to)) AS 'to_username', " +
+                                "t.amount, " +
+                                "(SELECT tt.transfer_type_desc FROM transfer_types tt WHERE tt.transfer_type_id = t.transfer_type_id)  AS 'transfer_type_desc' " +
+                                "from transfers t where t.account_from = (select a.account_id from accounts a where a.user_id = @id); ";
 
-        //if (reader.Read())
-        //{
-        //    Transfer newTransfer = GetTransfersFromReader(reader);
-        //}
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
 
-        // currently not returning a list of transfers, need to make it return a list and not just a single transfer
-        //public List<Transfer> GetTransfers(int id)
-        //{
-        //    const string sql = "select t.transfer_id, t.transfer_type_id, t.transfer_status_id, t.account_from, t.account_to, t.amount " +
-        //                        "from transfers t " +
-        //                        "where t.account_from = (select a.account_id from accounts a where a.account_id = @id) ";
+                SqlCommand command = new SqlCommand(sql, conn);
+                command.Parameters.AddWithValue("@id", id);
 
-        //    using (SqlConnection conn = new SqlConnection(connectionString))
-        //    {
-        //        conn.Open();
+                SqlDataReader reader = command.ExecuteReader();
 
-        //        SqlCommand command = new SqlCommand(sql, conn);
-        //        command.Parameters.AddWithValue("@id", id);
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        Transfer t = GetTransfersFromReader(reader);
+                        transfers.Add(t);
+                    }
+                }
+            }
+            return transfers;
+        }
 
-        //        SqlDataReader reader = command.ExecuteReader();
+        private Transfer GetTransfersFromReader(SqlDataReader reader)
+        {
+            return new Transfer()
+            {
+                Transfer_Id = Convert.ToInt32(reader["transfer_id"]),
 
-        //        if (reader.Read())
-        //        {
-        //            return GetTransfersFromReader(reader);
-        //        }
-        //    }
+                Transfer_Type_Desc = Convert.ToString(reader["transfer_type_desc"]),
 
-        //    return null;
-        //}
+                From_Username = Convert.ToString(reader["from_username"]),
+
+                To_Username = Convert.ToString(reader["to_username"]),
+
+                Amount = Convert.ToDouble(reader["amount"])
+
+            };
+        }
     }
 }

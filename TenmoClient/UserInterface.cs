@@ -82,6 +82,7 @@ namespace TenmoClient
                             break;
 
                         case 2: // View Past Transfers
+                            DisplayTransfers();
                             Console.WriteLine("NOT IMPLEMENTED!"); // TODO: Implement me
                             break;
 
@@ -90,9 +91,9 @@ namespace TenmoClient
                             break;
 
                         case 4: // Send TE Bucks
-
                             DisplayUsers();
                             DoTransfer();
+                            Console.WriteLine("Transfer Complete!");
                             // TODO: Implement me
                             break;
 
@@ -171,14 +172,26 @@ namespace TenmoClient
 
         private void DoTransfer()
         {
+            Transfer transfer = new Transfer();
             Console.WriteLine("---------------------------------");
             Console.WriteLine("Please enter ID of user you are sending to (0 to cancel): ");
-            Transfer transfer = new Transfer();
-            transfer.From_User_Id = Convert.ToInt32(Console.ReadLine());
+            transfer.To_User_Id = Convert.ToInt32(Console.ReadLine());
             Console.WriteLine("Please enter amount to send (0 to cancel): ");
             transfer.Amount = Convert.ToDouble(Console.ReadLine());
             usersService.SendMoney(transfer);
+        }
 
+        private void DisplayTransfers()
+        {
+            Console.WriteLine("---------------------------------");
+            Console.WriteLine("Transfer ID         From/To       Amount      Transaction Type");
+            Console.WriteLine("---------------------------------");
+            List<Transfer> transfers = new List<Transfer>();
+            transfers = usersService.DisplayTransfers();
+            foreach (Transfer transfer in transfers)
+            {
+                Console.WriteLine(transfer.Transfer_Id + "        " + transfer.From_Username + "/" + transfer.To_Username + "        " + transfer.Amount + "        " + transfer.Transfer_Type_Desc);
+            }
         }
     }
 }
