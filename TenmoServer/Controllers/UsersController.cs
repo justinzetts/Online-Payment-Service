@@ -42,7 +42,7 @@ namespace TenmoServer.Controllers
         [Authorize]
         public ActionResult SendMoney(Transfer transfer)
         {
-            transfer.From_User_Id = LoggedInUserId;
+            transfer.FromUserId = LoggedInUserId;
 
             bool DoTransfer = userDAO.CheckTransferValidity(transfer);
 
@@ -77,6 +77,16 @@ namespace TenmoServer.Controllers
             List<Transfer> transfers = userDAO.GetTransfers(userId);
 
             return Ok(transfers);
+        }
+
+        [HttpGet("transfer/{id}")]
+        [Authorize]
+
+        public ActionResult GetTransferById(int id)
+        {
+            Transfer transfer = userDAO.GetTransferById(id);
+
+            return Ok(transfer);
         }
 
         private int LoggedInUserId

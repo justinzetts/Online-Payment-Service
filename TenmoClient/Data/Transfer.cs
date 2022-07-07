@@ -6,27 +6,29 @@ namespace TenmoClient.Data
 {
     public class Transfer
     {
-        public int Transfer_Id { get; set; }
+        public int TransferId { get; set; }
 
-        public int From_User_Id { get; set; }
+        public int FromUserId { get; set; }
 
-        public int To_User_Id { get; set; }
+        public int ToUserId { get; set; }
 
-        public string From_Username { get; set; }
+        public string FromUsername { get; set; }
 
-        public string To_Username { get; set; }
+        public string ToUsername { get; set; }
 
-        public int Transfer_Type_Id { get; set; }
+        public int TransferTypeId { get; set; }
 
-        public int Transfer_Status_Id { get; set; }
+        public int TransferStatusId { get; set; }
 
-        public string Transfer_Type_Desc { get; set; }
+        public string TransferTypeDesc { get; set; }
 
-        public int Account_From_Id { get; set; }
+        public int AccountFromId { get; set; }
 
-        public int Account_To_Id { get; set; }
+        public int AccountToId { get; set; }
 
         public double Amount { get; set; }
+
+        public string TransferStatus { get; set; }
     }
 }
 
