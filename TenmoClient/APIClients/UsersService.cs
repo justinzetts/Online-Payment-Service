@@ -79,9 +79,7 @@ namespace TenmoClient
 
         public List<Transfer> DisplayTransfers()
         {
-
             RestRequest request = new RestRequest("users/transfers");
-
             IRestResponse<List<Transfer>> response = client.Get<List<Transfer>>(request);
 
             return response.Data;
