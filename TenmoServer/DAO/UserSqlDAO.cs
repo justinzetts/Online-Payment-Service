@@ -33,33 +33,32 @@ namespace TenmoServer.DAO
                     returnUser = GetUserFromReader(reader);
                 }
             }
-
             return returnUser;
         }
 
-        public List<User> GetUsers()
+        public List<User> GetUsers(int senderId)
         {
-            List<User> returnUsers = new List<User>();
+            List<User> recipients = new List<User>();
 
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 conn.Open();
 
-                SqlCommand cmd = new SqlCommand("SELECT user_id, username, password_hash, salt FROM users", conn);
+                SqlCommand cmd = new SqlCommand("SELECT u.user_id, u.username FROM users u WHERE u.user_id <> @senderID", conn);
+                cmd.Parameters.AddWithValue("@senderID", senderId);
+
                 SqlDataReader reader = cmd.ExecuteReader();
 
                 if (reader.HasRows)
                 {
                     while (reader.Read())
                     {
-                        User u = GetUserFromReader(reader);
-                        returnUsers.Add(u);
+                        User u = GetRecipientsFromReader(reader);
+                        recipients.Add(u);
                     }
-
                 }
             }
-
-            return returnUsers;
+            return recipients;
         }
 
         public User AddUser(string username, string password)
@@ -98,6 +97,15 @@ namespace TenmoServer.DAO
                 PasswordHash = Convert.ToString(reader["password_hash"]),
                 Salt = Convert.ToString(reader["salt"]),
 
+            };
+        }
+
+        private User GetRecipientsFromReader(SqlDataReader reader)
+        {
+            return new User()
+            {
+                UserId = Convert.ToInt32(reader["user_id"]),
+                Username = Convert.ToString(reader["username"]),
             };
         }
 

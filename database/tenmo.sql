@@ -66,12 +66,6 @@ INSERT INTO transfer_types (transfer_type_desc) VALUES ('Request');
 INSERT INTO transfer_types (transfer_type_desc) VALUES ('Send');
 
 
-
-INSERT INTO transfers (transfer_type_id, transfer_status_id, account_from, account_to, amount) 
-VALUES ('1001', '2001', '4000', '4001', '200')
-UPDATE accounts SET balance = balance - '200' WHERE account_id = '4000';
-UPDATE accounts SET balance = balance + '200' WHERE account_id = '4001';
-
 select * from users
 select * from transfers
 select * from transfer_types

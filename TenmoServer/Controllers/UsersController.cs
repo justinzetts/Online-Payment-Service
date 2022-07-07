@@ -55,8 +55,17 @@ namespace TenmoServer.Controllers
             {
                 return BadRequest("You attempted to send more TE Bucks than you have in your account. Please try again."); // look up status codes that would be applicable
             }
+        }
 
-            
+        [HttpGet("recipients")]
+        [Authorize]
+
+        public ActionResult ListRecipients()
+        {
+            int senderId = LoggedInUserId;
+            List<User> recipients = userDAO.GetUsers(senderId);
+
+            return Ok(recipients);
         }
 
         private int LoggedInUserId
@@ -76,5 +85,8 @@ namespace TenmoServer.Controllers
                 }
             }
         }
+
+
+        
     }
 }

@@ -11,7 +11,7 @@ namespace TenmoClient
     {
 
         private const string API_BASE_URL = "https://localhost:44315/";
-        private readonly RestClient client = new RestClient(); // API that communicates to Server's Controller
+        private readonly RestClient client = new RestClient();
 
         public UsersService()
         {
@@ -36,6 +36,45 @@ namespace TenmoClient
                 Console.WriteLine(response.Content);        
             }
             return response.Data.Balance;
+        }
+
+
+        public bool SendMoney(Transfer transfer)
+        {
+            bool SuccessfulTransfer = false;
+
+            RestRequest request = new RestRequest("users");
+            request.AddJsonBody(transfer);
+
+            IRestResponse<Transfer> response = client.Put<Transfer>(request);
+
+            if (response.ResponseStatus != ResponseStatus.Completed)
+            {
+                Console.WriteLine("Could not connect to the database; Try again later!");
+
+            }
+
+            else if (!response.IsSuccessful)
+            {
+                Console.WriteLine("Problem executing transfer: " + response.StatusDescription);
+                Console.WriteLine(response.Content);
+            }
+            else
+            {
+                SuccessfulTransfer = true;
+            }
+
+            return SuccessfulTransfer;
+        }
+
+        public List<API_User> DisplayRecipients()
+        {
+
+            RestRequest request = new RestRequest("users/recipients");
+
+            IRestResponse<List<API_User>> response = client.Get<List<API_User>>(request);
+
+            return response.Data;
         }
 
         private string token;

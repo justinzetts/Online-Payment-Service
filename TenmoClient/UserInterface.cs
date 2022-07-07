@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using TenmoClient.Data;
 
 namespace TenmoClient
@@ -89,7 +90,10 @@ namespace TenmoClient
                             break;
 
                         case 4: // Send TE Bucks
-                            Console.WriteLine("NOT IMPLEMENTED!"); // TODO: Implement me
+
+                            DisplayUsers();
+                            DoTransfer();
+                            // TODO: Implement me
                             break;
 
                         case 5: // Request TE Bucks
@@ -150,6 +154,31 @@ namespace TenmoClient
                     usersService.UpdateToken(jwt);
                 }
             }
+        }
+
+        private void DisplayUsers()
+        {
+            Console.WriteLine("---------------------------------");
+            Console.WriteLine("User ID              Name");
+            Console.WriteLine("---------------------------------");
+            List<API_User> recipients = new List<API_User>();
+            recipients = usersService.DisplayRecipients();
+            foreach(API_User recipient in recipients)
+            {
+                Console.WriteLine(recipient.UserId + "        " + recipient.Username);
+            }
+        }
+
+        private void DoTransfer()
+        {
+            Console.WriteLine("---------------------------------");
+            Console.WriteLine("Please enter ID of user you are sending to (0 to cancel): ");
+            Transfer transfer = new Transfer();
+            transfer.From_User_Id = Convert.ToInt32(Console.ReadLine());
+            Console.WriteLine("Please enter amount to send (0 to cancel): ");
+            transfer.Amount = Convert.ToDouble(Console.ReadLine());
+            usersService.SendMoney(transfer);
+
         }
     }
 }
