@@ -36,24 +36,27 @@ namespace TenmoServer.Controllers
             }
 
             return Ok(user);
-
-
         }
 
         [HttpPut]
         [Authorize]
         public ActionResult SendMoney(Transfer transfer)
         {
-            transfer.Account_From_Id = LoggedInUserId;
+            transfer.From_User_Id = LoggedInUserId;
 
-            bool transferSuccessful = userDAO.TransferBucks(transfer);
+            bool DoTransfer = userDAO.CheckTransferValidity(transfer);
 
-            if (transferSuccessful == false)
+            if (DoTransfer == true)
             {
-                return NotFound("Not successful"); // add a more robust message here later
+                userDAO.TransferBucks(transfer);
+                return Ok(transfer);
+            }
+            else
+            {
+                return BadRequest("You attempted to send more TE Bucks than you have in your account. Please try again."); // look up status codes that would be applicable
             }
 
-            return Ok(transfer);
+            
         }
 
         private int LoggedInUserId

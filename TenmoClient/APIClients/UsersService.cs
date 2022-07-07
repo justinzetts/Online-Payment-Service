@@ -18,7 +18,7 @@ namespace TenmoClient
             this.client = new RestClient("https://localhost:44315/");
         }
 
-        public double  GetBalanceById()
+        public double GetBalanceById() // remove console writelines someday
         {
             RestRequest request = new RestRequest("users");
 
@@ -26,21 +26,16 @@ namespace TenmoClient
 
             if (response.ResponseStatus != ResponseStatus.Completed)
             {
-                Console.WriteLine("Could not connect to the dad-a-base; Try again later!");
-
+                Console.WriteLine("Could not connect to the database; Try again later!");
                
             }
 
             if (!response.IsSuccessful)
             {
-                Console.WriteLine("Problem getting joke: " + response.StatusDescription);
-                Console.WriteLine(response.Content);
-
-                
+                Console.WriteLine("Problem getting balance: " + response.StatusDescription);
+                Console.WriteLine(response.Content);        
             }
-
             return response.Data.Balance;
-
         }
 
         private string token;
@@ -57,6 +52,5 @@ namespace TenmoClient
                 client.Authenticator = new JwtAuthenticator(jwt);
             }
         }
-
     }
 }

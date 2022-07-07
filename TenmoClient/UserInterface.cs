@@ -76,8 +76,8 @@ namespace TenmoClient
                     switch (menuSelection)
                     {
                         case 1: // View Balance
-                            double balance  = usersService.GetBalanceById();
-                            Console.WriteLine("Your current account balance is: $" + balance); // TODO: Implement me
+                            double balance = usersService.GetBalanceById();
+                            Console.WriteLine("Your current account balance is: $" + balance);
                             break;
 
                         case 2: // View Past Transfers

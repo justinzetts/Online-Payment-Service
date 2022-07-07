@@ -156,35 +156,61 @@ namespace TenmoServer.DAO
         }
 
 
+        public bool CheckTransferValidity(Transfer transfer)
+        {
+            bool DoTransfer = true;
+
+            const string sqlCheckValidity = "select a.balance from accounts a where a.user_id = @fromuserID";
+
+            using (SqlConnection connCheck = new SqlConnection(connectionString))
+            {
+                connCheck.Open();
+
+                SqlCommand commandCheck = new SqlCommand(sqlCheckValidity, connCheck);
+                commandCheck.Parameters.AddWithValue("@fromuserID", transfer.From_User_Id);
+
+                double balance = Convert.ToDouble(commandCheck.ExecuteScalar());
+
+                if (balance < transfer.Amount)
+                {
+                    DoTransfer = false;
+                }
+            }
+            return DoTransfer;
+        }
         public bool TransferBucks(Transfer transfer)
         {
-            // TO DO - do checking to make sure balance is available, to make sure to account is valid, etc
+        // TO DO - do checking to make sure balance is available, to make sure to account is valid, etc
 
+            const string sqlIfValid = "INSERT INTO transfers (transfer_type_id, transfer_status_id, account_from, account_to, amount) " +
+                            "VALUES('1001', '2001', (SELECT a.account_id FROM accounts a WHERE a.user_id = @fromuserID), @accountToID, @amount); " +
+                            "UPDATE accounts SET balance = balance - @amount WHERE account_id = (SELECT a.account_id FROM accounts a WHERE a.user_id = @fromuserID); " +
+                            "UPDATE accounts SET balance = balance + @amount WHERE account_id = @accountToID; ";
 
-            const string sql = "INSERT INTO transfers (transfer_type_id, transfer_status_id, account_from, account_to, amount) " +
-                                "VALUES('1001', '2001', (SELECT a.account_id FROM accounts a WHERE a.user_id = @accountFromID), @accountToID, @amount); " +
-                                "UPDATE accounts SET balance = balance - @amount WHERE account_id = (SELECT a.account_id FROM accounts a WHERE a.user_id = @accountFromID); " +
-                                "UPDATE accounts SET balance = balance + @amount WHERE account_id = @accountToID; ";
-
-            using (SqlConnection conn = new SqlConnection(connectionString))
+            using (SqlConnection connIfValid = new SqlConnection(connectionString))
             {
-                conn.Open();
+                connIfValid.Open();
 
-                SqlCommand command = new SqlCommand(sql, conn);
-                command.Parameters.AddWithValue("@accountFromID", transfer.Account_From_Id);
-                command.Parameters.AddWithValue("@accountToID", transfer.Account_To_Id);
-                command.Parameters.AddWithValue("@amount", transfer.Amount);
+                SqlCommand commandIfValid = new SqlCommand(sqlIfValid, connIfValid);
+                commandIfValid.Parameters.AddWithValue("@fromuserID", transfer.From_User_Id);
+                commandIfValid.Parameters.AddWithValue("@accountToID", transfer.Account_To_Id);
+                commandIfValid.Parameters.AddWithValue("@amount", transfer.Amount);
 
-                int count = command.ExecuteNonQuery();
+                int count = commandIfValid.ExecuteNonQuery();
 
-                //if (reader.Read())
-                //{
-                //    Transfer newTransfer = GetTransfersFromReader(reader);
-                //}
+                
             }
 
-            return true;
+        return true;
         }
+
+
+
+        //if (reader.Read())
+        //{
+        //    Transfer newTransfer = GetTransfersFromReader(reader);
+        //}
+
         // currently not returning a list of transfers, need to make it return a list and not just a single transfer
         //public List<Transfer> GetTransfers(int id)
         //{
