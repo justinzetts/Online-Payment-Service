@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using TenmoClient.Data;
 
 namespace TenmoClient
@@ -83,7 +84,6 @@ namespace TenmoClient
 
                         case 2: // View Past Transfers
                             DisplayTransfers();
-                            DisplayTransferByID();
                             break;
 
                         case 3: // View Pending Requests
@@ -187,28 +187,54 @@ namespace TenmoClient
             Console.WriteLine("---------------------------------");
             List<Transfer> transfers = new List<Transfer>();
             transfers = usersService.DisplayTransfers();
+
             foreach (Transfer transfer in transfers)
             {
                 Console.WriteLine(transfer.TransferId + "           " + transfer.FromUsername + "/" + transfer.ToUsername + "       " + transfer.Amount + "        " + transfer.TransferTypeDesc);
             }
-            Console.WriteLine("Please enter transfer ID to view details (0 to cancel): ");
+            if (transfers == null)
+            {
+                Console.WriteLine("No transfers yet for this user.");
+            }
+            else if (transfers != null)
+            {
+                DisplayTransferByID(transfers);
+            }
+
         }
-        private void DisplayTransferByID()
+        private void DisplayTransferByID(List<Transfer> transfers)
         {
-            int transferID = Convert.ToInt32(Console.ReadLine());
-            Console.WriteLine("---------------------------------");
-            Console.WriteLine("Transfer Details");
-            Console.WriteLine("---------------------------------");
+            Transfer transfer = null;
 
-            Transfer transfer = new Transfer();
-            transfer = usersService.DisplayTransferByID(transferID);
+            while (transfer == null)
+            {
+                Console.WriteLine("Please enter transfer ID to view details (0 to cancel): ");
 
-            Console.WriteLine("Id: " + transfer.TransferId);
-            Console.WriteLine("From: " + transfer.FromUsername);
-            Console.WriteLine("To: " + transfer.ToUsername);
-            Console.WriteLine("Type: " + transfer.TransferTypeDesc);
-            Console.WriteLine("Status: " + transfer.TransferStatus);
-            Console.WriteLine("Amount: " + transfer.Amount);
+                if (int.TryParse(Console.ReadLine(), out int transferID))
+                {
+                    transfer = usersService.DisplayTransferByID(transferID);
+                    if (transfer == null)
+                    {
+                        Console.WriteLine("Invalid transfer ID (does not exist). Please try again");
+                    }
+                    else if (transfers.Any(t => t.TransferId == transfer.TransferId))
+                    {
+                        Console.WriteLine("---------------------------------");
+                        Console.WriteLine("Transfer Details");
+                        Console.WriteLine("---------------------------------");
+                        Console.WriteLine("Id: " + transfer.TransferId);
+                        Console.WriteLine("From: " + transfer.FromUsername);
+                        Console.WriteLine("To: " + transfer.ToUsername);
+                        Console.WriteLine("Type: " + transfer.TransferTypeDesc);
+                        Console.WriteLine("Status: " + transfer.TransferStatus);
+                        Console.WriteLine("Amount: " + transfer.Amount);
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Invalid input. Only input a number.");
+                }
+            }
         }
     }
 }

@@ -84,7 +84,25 @@ namespace TenmoClient
 
             IRestResponse<List<Transfer>> response = client.Get<List<Transfer>>(request);
 
-            return response.Data;
+            //if (response.ResponseStatus != ResponseStatus.Completed)
+            //{
+            //    Console.WriteLine("An error occurred communicating with the server.");
+            //}
+            //else if (!response.IsSuccessful)
+            //{
+            //    if (!string.IsNullOrWhiteSpace(response.Data.))
+            //    {
+            //        Console.WriteLine("An error message was received: " + response.Data.Message);
+            //    }
+            //    else
+            //    {
+            //        Console.WriteLine("An error response was received from the server. The status code is " + (int)response.StatusCode);
+            //    }
+            //    return false;
+            //}
+            //else
+
+                return response.Data;
         }
 
         public Transfer DisplayTransferByID(int id)

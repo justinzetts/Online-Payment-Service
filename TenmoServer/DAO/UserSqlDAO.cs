@@ -194,6 +194,8 @@ namespace TenmoServer.DAO
         {
             const string sql = "select t.transfer_id, (SELECT u.username FROM users u WHERE u.user_id = " +
                                "(SELECT a.user_id FROM accounts a WHERE account_id = t.account_from)) AS 'from_username', " +
+                               "(SELECT a.user_id FROM accounts a WHERE a.account_id = t.account_from) AS 'from_user_id', " +
+                               "(SELECT a.user_id FROM accounts a WHERE a.account_id = t.account_to) AS 'to_user_id'," +
                                "(SELECT u.username FROM users u WHERE u.user_id = (SELECT a.user_id FROM accounts a WHERE account_id = t.account_to)) " +
                                "AS 'to_username', t.amount, (SELECT tt.transfer_type_desc FROM transfer_types tt WHERE tt.transfer_type_id = t.transfer_type_id) " +
                                "AS 'transfer_type_desc', (SELECT ts.transfer_status_desc FROM transfer_statuses ts WHERE ts.transfer_status_id = t.transfer_status_id) " +
@@ -245,6 +247,10 @@ namespace TenmoServer.DAO
                 FromUsername = Convert.ToString(reader["from_username"]),
 
                 ToUsername = Convert.ToString(reader["to_username"]),
+
+                ToUserId = Convert.ToInt32(reader["to_user_id"]), 
+
+                FromUserId = Convert.ToInt32(reader["from_user_id"]), 
 
                 Amount = Convert.ToDouble(reader["amount"])
             };

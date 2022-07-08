@@ -85,7 +85,13 @@ namespace TenmoServer.Controllers
         public ActionResult GetTransferById(int id)
         {
             Transfer transfer = userDAO.GetTransferById(id);
-
+            if (transfer != null)
+            {
+                if (LoggedInUserId != transfer.ToUserId && LoggedInUserId != transfer.FromUserId)
+                {
+                    return Forbid();
+                }
+            }
             return Ok(transfer);
         }
 
