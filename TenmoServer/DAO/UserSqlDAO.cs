@@ -16,8 +16,8 @@ namespace TenmoServer.DAO
             connectionString = dbConnectionString;
         }
 
-        public User GetUser(string username)
-        {
+        public User GetUser(string username) // looks up user in SQL by their username & creates User object for registration and authentication
+        {                                    // via the LoginController
             User returnUser = null;
 
             using (SqlConnection conn = new SqlConnection(connectionString))
@@ -36,7 +36,7 @@ namespace TenmoServer.DAO
             return returnUser;
         }
 
-        public List<User> GetUsers(int senderId)
+        public List<User> GetUsers(int senderId) // generates list of User objects to be displayed in console as potential recipients for fund transferring
         {
             List<User> recipients = new List<User>();
 
@@ -61,7 +61,7 @@ namespace TenmoServer.DAO
             return recipients;
         }
 
-        public User AddUser(string username, string password)
+        public User AddUser(string username, string password) // adds User to SQL database during registration
         {
             IPasswordHasher passwordHasher = new PasswordHasher();
             PasswordHash hash = passwordHasher.ComputeHash(password);
@@ -89,7 +89,7 @@ namespace TenmoServer.DAO
         }
 
 
-        public User GetBalanceById(int id)
+        public User GetBalanceById(int id) // populates a User object with user's Balance to display in console
         {
             const string sql = "SELECT u.username, u.user_id, (SELECT a.balance FROM accounts a WHERE u.user_id = a.user_id) AS 'Balance' "
             + "FROM Users u WHERE u.user_id = @id";
@@ -111,9 +111,9 @@ namespace TenmoServer.DAO
             return null;
         }
 
-        public bool CheckTransferValidity(Transfer transfer)
+        public bool CheckTransferValidity(Transfer transfer) // determines if an attempted Transfer if valid by comparing Transfer amount to user's Balance
         {
-            bool DoTransfer = true;
+            bool ShouldTransfer = true;
 
             const string sqlCheckValidity = "select a.balance from accounts a where a.user_id = @fromuserID";
 
@@ -128,16 +128,14 @@ namespace TenmoServer.DAO
 
                 if (balance < transfer.Amount)
                 {
-                    DoTransfer = false;
+                    ShouldTransfer = false;
                 }
             }
-            return DoTransfer;
+            return ShouldTransfer;
         }
 
-        public bool TransferBucks(Transfer transfer)
+        public bool TransferBucks(Transfer transfer) // adds a Transfer to SQL and updates both users' Balances in SQL accordingly
         {
-            // TO DO - do checking to make sure balance is available, to make sure to account is valid, etc
-
             const string sqlIfValid = "INSERT INTO transfers (transfer_type_id, transfer_status_id, account_from, account_to, amount) " +
                             "VALUES('1001', '2001', (SELECT a.account_id FROM accounts a WHERE a.user_id = @fromuserID), " +
                             "(SELECT a.account_id FROM accounts a WHERE a.user_id = @touserID), @amount); " +
@@ -158,7 +156,7 @@ namespace TenmoServer.DAO
             return true;
         }
 
-        public List<Transfer> GetTransfers(int id)
+        public List<Transfer> GetTransfers(int id) // creates a list of all Transfers (both to AND from User) to be displayed in the console
         {
             List<Transfer> transfers = new List<Transfer>();
 
@@ -190,8 +188,8 @@ namespace TenmoServer.DAO
             return transfers;
         }
 
-        public Transfer GetTransferById(int id)
-        {
+        public Transfer GetTransferById(int id) // looks up all 8 properties of a given Transfer (looked up via id selected from user)
+        {                                       // to populate a Transfer object to be displayed in console
             const string sql = "select t.transfer_id, (SELECT u.username FROM users u WHERE u.user_id = " +
                                "(SELECT a.user_id FROM accounts a WHERE account_id = t.account_from)) AS 'from_username', " +
                                "(SELECT a.user_id FROM accounts a WHERE a.account_id = t.account_from) AS 'from_user_id', " +

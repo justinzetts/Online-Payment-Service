@@ -13,7 +13,7 @@ namespace TenmoServer.Controllers
 {
     [Route("Users")]
     [ApiController]
-    // [Authorize] ???
+
     public class UsersController : ControllerBase
     {
         private readonly IUserDAO userDAO;
@@ -34,7 +34,6 @@ namespace TenmoServer.Controllers
             {
                 return NotFound("Could not find user " + id);
             }
-
             return Ok(user);
         }
 
@@ -53,7 +52,7 @@ namespace TenmoServer.Controllers
             }
             else
             {
-                return BadRequest("You attempted to send more TE Bucks than you have in your account. Please try again."); // look up status codes that would be applicable
+                return BadRequest("You attempted to send more TE Bucks than you have in your account. Please try again.");
             }
         }
 
@@ -92,7 +91,7 @@ namespace TenmoServer.Controllers
                     return Forbid();
                 }
             }
-            return Ok(transfer);
+            return Ok(transfer); 
         }
 
         private int LoggedInUserId

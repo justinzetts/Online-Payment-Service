@@ -61,10 +61,7 @@ namespace TenmoClient
                 Console.WriteLine("Welcome to TEnmo! Please make a selection: ");
                 Console.WriteLine("1: View your current balance");
                 Console.WriteLine("2: View your past transfers");
-                Console.WriteLine("3: View your pending requests");
-                Console.WriteLine("4: Send TE bucks");
-                Console.WriteLine("5: Request TE bucks");
-                Console.WriteLine("6: Log in as different user");
+                Console.WriteLine("3: Send TE bucks");
                 Console.WriteLine("0: Exit");
                 Console.WriteLine("---------");
                 Console.Write("Please choose an option: ");
@@ -86,28 +83,10 @@ namespace TenmoClient
                             DisplayTransfers();
                             break;
 
-                        case 3: // View Pending Requests
-                            Console.WriteLine("NOT IMPLEMENTED!"); // TODO: Implement me
+                        case 3: // Send TE Bucks
+                            List<API_User> recipients = DisplayUsers();
+                            DoTransfer(recipients);
                             break;
-
-                        case 4: // Send TE Bucks
-                            DisplayUsers();
-                            DoTransfer();
-                            Console.WriteLine("Transfer Complete!");
-                            break;
-
-                        case 5: // Request TE Bucks
-                            Console.WriteLine("NOT IMPLEMENTED!"); // TODO: Implement me
-                            break;
-
-                        case 6: // Log in as someone else
-
-                            authService.ClearAuthenticator();
-
-                            // NOTE: You will need to clear any stored JWTs in other API Clients
-                            Console.WriteLine("NOT IMPLEMENTED!");
-
-                            return; // Leaves the menu and should return as someone else
 
                         case 0: // Quit
                             Console.WriteLine("Goodbye!");
@@ -138,25 +117,24 @@ namespace TenmoClient
 
         private void HandleUserLogin()
         {
-            while (!authService.IsLoggedIn) //will keep looping until user is logged in
+            while (!authService.IsLoggedIn)
             {
                 LoginUser loginUser = consoleService.PromptForLogin();
 
-                // Log the user in
                 API_User authenticatedUser = authService.Login(loginUser);
 
                 if (authenticatedUser != null)
                 {
                     string jwt = authenticatedUser.Token;
 
-                    // TODO: Do something with this JWT.
-                    Console.WriteLine("Successfully logged in with JWT of " + jwt);
-                    usersService.UpdateToken(jwt);
+                    Console.WriteLine("Successfully logged in with JWT of " + jwt); //not practical nor safe to display jwt to user--only done here
+                    usersService.UpdateToken(jwt);                                  //for the sake of easily capturing it to plug into Postman
                 }
             }
         }
 
-        private void DisplayUsers()
+        private List<API_User> DisplayUsers() //displays a list of API_Users that can receive funds from user via Transfer
+                                              //returns a list of API_Users which is referenced in DoTransfer to ensure a valid recipient is selected
         {
             Console.WriteLine("---------------------------------");
             Console.WriteLine("User ID              Name");
@@ -167,17 +145,44 @@ namespace TenmoClient
             {
                 Console.WriteLine(recipient.UserId + "        " + recipient.Username);
             }
+            return recipients;
         }
 
-        private void DoTransfer()
+        private void DoTransfer(List<API_User> recipients)
         {
             Transfer transfer = new Transfer();
             Console.WriteLine("---------------------------------");
-            Console.WriteLine("Please enter ID of user you are sending to (0 to cancel): ");
-            transfer.ToUserId = Convert.ToInt32(Console.ReadLine());
-            Console.WriteLine("Please enter amount to send (0 to cancel): ");
-            transfer.Amount = Convert.ToDouble(Console.ReadLine());
-            usersService.SendMoney(transfer);
+
+            bool IsSuccessful = false;
+
+            while (IsSuccessful == false) //keeps running until user selects a valid recipient for Transfer
+            {
+                Console.WriteLine("Please enter ID of user you are sending to (0 to cancel): ");
+                transfer.ToUserId = Convert.ToInt32(Console.ReadLine());
+
+                if (transfer.ToUserId == 0)
+                {
+                    Console.WriteLine("Transfer cancelled. Returning to main menu.");
+                    break;
+                }
+
+                foreach (API_User recipient in recipients)
+                {
+                    if (transfer.ToUserId == recipient.UserId)
+                    {
+                        Console.WriteLine("Please enter amount to send (0 to cancel): ");
+                        transfer.Amount = Convert.ToDouble(Console.ReadLine());
+                        usersService.SendMoney(transfer);
+                        Console.WriteLine("Transfer Complete!");
+                        IsSuccessful = true;
+                    }
+                }
+
+                if (IsSuccessful == false)
+                {
+                    Console.WriteLine("Invalid selection. Please try again.");
+                }
+            }
         }
 
         private void DisplayTransfers()
@@ -200,19 +205,26 @@ namespace TenmoClient
             {
                 DisplayTransferByID(transfers);
             }
-
         }
+
         private void DisplayTransferByID(List<Transfer> transfers)
         {
             Transfer transfer = null;
 
-            while (transfer == null)
+            while (transfer == null) //keeps running until user selects a valid TransferID
             {
                 Console.WriteLine("Please enter transfer ID to view details (0 to cancel): ");
 
                 if (int.TryParse(Console.ReadLine(), out int transferID))
                 {
                     transfer = usersService.DisplayTransferByID(transferID);
+
+                    if (transferID == 0)
+                    {
+                        Console.WriteLine("Returning to main menu.");
+                        break;
+                    }
+
                     if (transfer == null)
                     {
                         Console.WriteLine("Invalid transfer ID (does not exist). Please try again");

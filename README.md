@@ -1,128 +1,32 @@
-# Module 3 Capstone - TEnmo
+# Online Payment Service - Overview
 
-Congratulations—you've landed a job with TEnmo, whose product is an online payment service for transferring "TE bucks" between friends. However, they don't have a product yet. You've been tasked with writing a RESTful API server and command-line application.
+My software development bootcamp (Tech Elevator) tasked my classmate Mohammed Qaralos and myself with developing an application for an online payment service meant to transfer "TE bucks" between friends. 
 
-## Use cases
+We utilized all that we learned about Client-Server Programming in C# to build a RESTful API server with the ASP.NET Core framework. All user information (username, password, account balance, and much more) is stored in a SQL database which is accessed and manipulated by the server. On the client side, we created a command-line application to act as a user interface with which the user can interact with the server.
 
-### Required Use Cases
-You should attempt to complete all of the following required use cases.
+## Technologies Used
 
-1. **[COMPLETE]** As a user of the system, I need to be able to register myself with a username and password.
-   1. A new registered user starts with an initial balance of 1,000 TE Bucks.
-   2. The ability to register has been provided in your starter code.
-2. **[COMPLETE]** As a user of the system, I need to be able to log in using my registered username and password.
-   1. Logging in returns an Authentication Token. I need to include this token with all my subsequent interactions with the system outside of registering and logging in.
-   2. The ability to log in has been provided in your starter code.
-3. As an authenticated user of the system, I need to be able to see my Account Balance.
-4. As an authenticated user of the system, I need to be able to *send* a transfer of a specific amount of TE Bucks to a registered user.
-   1. I should be able to choose from a list of users to send TE Bucks to.
-   2. A transfer includes the User IDs of the from and to users and the amount of TE Bucks.
-   3. The receiver's account balance is increased by the amount of the transfer.
-   4. The sender's account balance is decreased by the amount of the transfer.
-   5. I can't send more TE Bucks than I have in my account.
-   6. A Sending Transfer has an initial status of "approved"
-5. As an authenticated user of the system, I need to be able to see transfers I have sent or received.
-6. As an authenticated user of the system, I need to be able to retrieve the details of any transfer involving me based upon the transfer ID.
+- C#
 
-### Optional Use Cases
-If you complete all of the required use cases and are looking for additional challenge, complete as many of the following optional use cases as you can.
+- ASP.NET
 
-7. As an authenticated user of the system, I need to be able to *request* a transfer of a specific amount of TE Bucks from another registered user.
-   1. I should be able to choose from a list of users to request TE Bucks from.
-   2. A transfer includes the User IDs of the from and to users and the amount of TE Bucks.
-   3. A Request Transfer has an initial status of "pending."
-   4. No account balance changes until the request is approved.
-   5. The transfer request should appear in both users' list of transfers (use case #5).
-8. As an authenticated user of the system, I need to be able to see my "pending" transfers.
-9. As an authenticated user of the system, I need to be able to either approve or reject a Request Transfer requested of me.
-   1. I can't "approve" a given Request Transfer for more TE Bucks than I have in my account.
-   2. The Request Transfer status is "approved" if I approve, or "rejected" if I reject the request.
-   3. If the transfer is approved, the requester's account balance is increased by the amount of the request.
-   4. If the transfer is approved, the requestee's account balance is decreased by the amount of the request.
-   5. If the transfer is rejected, no account balance changes.
+- SQL Server Management Studio
 
-## Sample screens
+- Postman (for server testing)
 
-### Use Case 3 - Current balance
-```
-Your current account balance is: $9999.99
-```
+## Application Features
 
-### Use Case 4 - Send TE Bucks
-```
--------------------------------------------
-Users
-ID          Name
--------------------------------------------
-313         Bernice
-54          Larry
----------
+- Users can Register with a username and password. Newly registered users start with an initial balance of 1,000 TE Bucks.
 
-Enter ID of user you are sending to (0 to cancel):
-Enter amount:
-```
+- Users can Login using their registered username and password. Logging in and subsequent interactions are authenticated using the user's JWT.
 
-### Use Case 5 - View transfers
-```
--------------------------------------------
-Transfers
-ID          From/To                 Amount
--------------------------------------------
-23          From: Bernice          $ 903.14
-79          To:    Larry           $  12.55
----------
-Please enter transfer ID to view details (0 to cancel): "
-```
+- Authenticated users can display their current balance.
 
-### Use Case 6 - Transfer details
-```
---------------------------------------------
-Transfer Details
---------------------------------------------
- Id: 23
- From: Bernice
- To: Me Myselfandi
- Type: Send
- Status: Approved
- Amount: $903.14
-```
+- Authenticated users may initiate a transfer of a specific amount of TE Bucks to another registered user. Once user selects the Send TE Bucks option, a list of all other registered users is displayed to choose from. User specifies a recipient and an amount, and the program updates both balances (sender and recipient) in SQL. Protections are in place to ensure user selects a valid recipient, can send only as many TE Bucks as are in their account, etc.
 
-### Use Case 7 - Requesting TE Bucks
-```
--------------------------------------------
-Users
-ID          Name
--------------------------------------------
-313         Bernice
-54          Larry
----------
+ - Authenticated users may see a list of all transfers they have sent or received. Once transfer list is displayed, they may choose to display additional details of any such transfer via its Transfer ID.
 
-Enter ID of user you are requesting from (0 to cancel):
-Enter amount:
-```
-
-### Use Case 8 - Pending requests
-```
--------------------------------------------
-Pending Transfers
-ID          To                     Amount
--------------------------------------------
-88          Bernice                $ 142.56
-147         Larry                  $  10.17
----------
-Please enter transfer ID to approve/reject (0 to cancel): "
-```
-
-### Use Case 9 - Approve or reject pending transfer
-```
-1: Approve
-2: Reject
-0: Don't approve or reject
----------
-Please choose an option:
-```
-
-## Database Schema
+## SQL Database Schema
 
 ![Database schema](./database_schema.png)
 
@@ -172,7 +76,7 @@ The `transfer_statuses` table stores the statuses of transfers that are possible
 | `transfer_status_id`   | Unique identifier of the transfer status  |
 | `transfer_status_desc` | String description of the transfer status |
 
-There are three statuses of transfers:
+There are three statuses of transfers (this table is largely unutilized in our application):
 
 | `transfer_status_id` | `transfer_status_desc` |Purpose                                                                                 |
 | -------------------- | -------------------- | ---------------------------------------------------------------------------------------  |
@@ -193,40 +97,7 @@ The `transfer` table stores the transfers of TE bucks.
 | `account_to`         | Foreign key to the `accounts` table; identifies the account that the funds are going to         |
 | `amount`             | Amount of the transfer                                                                          |
 
-## How to set up the database
+## Setup
 
-In the database folder, you'll find the database creation script `tenmo.sql`. Open this in SQL Server Management Studio and execute it.
+Open the database creation script `OnlinePaymentService.sql` in SQL Server Management Studio and execute it. That's it!
 
-## Authentication
-
-The user registration and authentication functionality for the system has already been implemented. If you review the login code in `Program.cs`, you'll notice that after a successful authentication, the user is stored in `UserService`, which is a helper class to keep track of the logged in user and provide information about them.
-
-There's also a method called `UserService.GetToken()` that returns the authorization token—meaning JWT—of the logged in user. When the use cases above refer to an "authenticated user", this means a request that includes the token.
-
-## Client / Server Projects
-
-To reduce the odds of mistakes, the client and server have been split into two separate solutions. Both solutions will need to be run together in order for the application to work.
-
-In a real-world scenario the server would be running on a centralized machine while multiple client applications would live on individual user's machines (or in a web application or mobile app for a more modern application). For development the client, server, and database all run on one machine, but the application should be designed with multiple clients interacting with a centralized server.
-
-## API Debugging Tips
-
-- Test your server frequently in Postman
-- Try to figure out if your server is getting a valid request (via debugging) and if the server is sending back a valid response (via debugging or Postman)
-- Whenever possible, try to eliminate places where the error could be hiding and narrow it down to a specific class or method
-- Refer to the debugging flowchart below for additional tips
-
-![Debugging Flowchart](./APIDebugging.png)
-
-## Code Review Criteria
-
-- Your code should follow REST conventions wherever possible
-- Your API should be secured against unauthenticated attackers
-- Your API should forbid transferring money from other people's accounts to your own account (requests are fine - see optional requirements)
-- You should not put all of your new controller methods inside of the Login Controller
-- You should not put all of your client-side API code inside of the Auth Service
-- You have no restrictions around the use of static or console statements this capstone
-- You may modify any pre-provided code to suit your needs
-- Keep methods small, and keep classes focused on a single responsibility principle
-- I may ask you to show me your Postman history around this project so I can see the types of requests you made to test your server
-- Code Review may be done in groups of teams or even with the class as a whole
